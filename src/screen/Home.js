@@ -1,17 +1,30 @@
-import {BackHandler, StyleSheet, Text, View} from 'react-native';
-import React, {useEffect, useRef} from 'react';
+import {
+  ActivityIndicator,
+  Alert,
+  BackHandler,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import React, {useEffect, useRef, useState} from 'react';
 import {useIsFocused, useNavigation} from '@react-navigation/native';
 import {useTheme} from 'react-native-paper';
 import CustomText from '../customText/CustomText';
 import {fonts} from '../customText/fonts';
 import {Iconify} from 'react-native-iconify';
 import {showToast} from '../../utils/Toast';
+import {launchCamera, launchImageLibrary} from 'react-native-image-picker';
+import {useAuthContext} from '../context/GlobaContext';
 
 export default function Home() {
+  const {handleLogout} = useAuthContext();
   const navigation = useNavigation();
   const theme = useTheme();
   const isFocused = useIsFocused();
   const backPressedOnce = useRef(false);
+  const [spinner, setSpinner] = useState(false);
+
   useEffect(() => {
     const backHandler = BackHandler.addEventListener(
       'hardwareBackPress',
@@ -33,7 +46,31 @@ export default function Home() {
       },
     );
     return () => backHandler.remove();
-  }, []);
+  }, [isFocused]);
+
+  const handleCamera = async () => {
+    await setSpinner(true);
+    const options = {
+      mediaType: 'photo',
+      quality: 1,
+      base64: true,
+    };
+    await launchCamera(options, response => {
+      if (response.didCancel) {
+        showToast('Picture not selected ...');
+      } else if (response.errorCode) {
+        showToast('Something went wrong ...');
+      } else {
+        let imageUri = response.assets[0]?.uri;
+        navigation.navigate('Form', {imageUri});
+      }
+    });
+    await setSpinner(false);
+  };
+
+  const handleNavigate = () => {
+    navigation.navigate('Edit Detail');
+  };
 
   return (
     <>
@@ -53,11 +90,23 @@ export default function Home() {
             </CustomText>
           </View>
 
-          <View style={styles.profileImage}>
-            <Iconify
+          <View style={{flexDirection: 'row', gap: 6, top: 10}}>
+            {/* <Iconify
               icon="fa-solid:user"
               size={25}
               color={theme.colors.onBackground}
+            /> */}
+            <Iconify
+              icon="fluent:text-bullet-list-square-edit-24-regular"
+              size={30}
+              color={theme.colors.onBackground}
+              onPress={handleNavigate}
+            />
+            <Iconify
+              icon="heroicons-outline:logout"
+              size={30}
+              color={theme.colors.onBackground}
+              onPress={handleLogout}
             />
           </View>
         </View>
@@ -79,7 +128,7 @@ export default function Home() {
 
         <View style={styles.rulesContainer}>
           <CustomText style={[styles.rulesTitle, {fontFamily: fonts.Bold}]}>
-            Conductor Guidelines
+            Guidelines :
           </CustomText>
 
           <View style={styles.rule}>
@@ -126,6 +175,28 @@ export default function Home() {
             </CustomText>
           </View>
         </View>
+
+        {/* Capture image */}
+        {spinner ? (
+          <>
+            <View style={styles.iconView}>
+              <ActivityIndicator size={50} color={theme.colors.btn} />
+            </View>
+          </>
+        ) : (
+          <>
+            <TouchableOpacity
+              onPress={handleCamera}
+              activeOpacity={0.6}
+              style={[styles.iconView]}>
+              <Iconify
+                icon="tabler:capture"
+                size={80}
+                color={theme.colors.btn}
+              />
+            </TouchableOpacity>
+          </>
+        )}
       </View>
     </>
   );
@@ -187,5 +258,15 @@ const styles = StyleSheet.create({
     color: '#555',
     lineHeight: 20,
     flex: 1,
+  },
+  iconView: {
+    padding: 4,
+    position: 'absolute',
+    bottom: 20,
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignSelf: 'center',
+    borderRadius: 16,
   },
 });

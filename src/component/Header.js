@@ -4,7 +4,7 @@ import {Appbar, Button, Divider, Menu, TextInput} from 'react-native-paper';
 import {useTheme} from 'react-native-paper';
 import {View, StyleSheet} from 'react-native';
 
-const Header = ({screenName, renderAction}) => {
+const Header = ({screenName,}) => {
   let theme = useTheme();
   let navigation = useNavigation();
   const BackNavigation = () => {
@@ -28,7 +28,7 @@ const Header = ({screenName, renderAction}) => {
             color: theme.colors.onBackground,
           }}
         />
-        {renderAction && renderAction()}
+        
       </Appbar.Header>
     </View>
   );
