@@ -9,6 +9,8 @@ import {ActivityIndicator, useTheme} from 'react-native-paper';
 import Login from './auth/Login';
 import Home from './screen/Home';
 import FirstScreen from './onBoarding/FirstScreen';
+import Form from './screen/Form';
+import EditProfile from './screen/EditProfile';
 
 const Stack = createNativeStackNavigator();
 
@@ -74,6 +76,17 @@ export default function AppNavigator() {
               component={Home}
               options={{headerShown: false}}
             />
+            <Stack.Screen
+              name="Form"
+              component={Form}
+              options={{headerShown: false}}
+            />
+            <Stack.Screen
+              name="Edit Detail"
+              component={EditProfile}
+              options={{headerShown: false}}
+            />
+
           </>
         )}
       </Stack.Navigator>
