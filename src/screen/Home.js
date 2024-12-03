@@ -18,7 +18,7 @@ import {launchCamera, launchImageLibrary} from 'react-native-image-picker';
 import {useAuthContext} from '../context/GlobaContext';
 
 export default function Home() {
-  const {handleLogout} = useAuthContext();
+  const {handleLogout, userDetail} = useAuthContext();
   const navigation = useNavigation();
   const theme = useTheme();
   const isFocused = useIsFocused();
@@ -86,16 +86,10 @@ export default function Home() {
               Welcome Back ,
             </CustomText>
             <CustomText style={{fontFamily: fonts.Bold, fontSize: 24, top: -4}}>
-              Murshid
+              {userDetail?.name}
             </CustomText>
           </View>
-
           <View style={{flexDirection: 'row', gap: 6, top: 10}}>
-            {/* <Iconify
-              icon="fa-solid:user"
-              size={25}
-              color={theme.colors.onBackground}
-            /> */}
             <Iconify
               icon="fluent:text-bullet-list-square-edit-24-regular"
               size={30}
@@ -111,19 +105,19 @@ export default function Home() {
           </View>
         </View>
 
-        {/* total fair  */}
+        {/* Today's fair  */}
         <View
           style={[styles.FairView, {backgroundColor: theme.colors.appDark}]}>
           <View>
             <CustomText style={[styles.totalText, {fontFamily: fonts.Regular}]}>
-              Total Fair
+              Today's Fair
             </CustomText>
             <CustomText style={[styles.valueText, {fontFamily: fonts.Regular}]}>
               $1,23,444
             </CustomText>
           </View>
 
-          <Iconify icon="cryptocurrency:fair" size={35} color={'#fff'} />
+          <Iconify icon="pixelarticons:coin" size={35} color={'#fff'} />
         </View>
 
         <View style={styles.rulesContainer}>
