@@ -8,12 +8,14 @@ import {
 import React, {useState} from 'react';
 import {Button, useTheme} from 'react-native-paper';
 import {useNavigation} from '@react-navigation/native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import CustomText from '../customText/CustomText';
 import Header from '../component/Header';
 import {useAuthContext} from '../context/GlobaContext';
 import {fonts} from '../customText/fonts';
-import {showToast} from '../../utils/Toast';
+import firestore from '@react-native-firebase/firestore';
+import { showToast } from '../../utils/Toast';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 
 export default function Login() {
   let theme = useTheme();
@@ -24,10 +26,64 @@ export default function Login() {
   const [password, setPassword] = useState('');
   const [spinner, setSpinner] = useState(false);
 
-  const handleLogin = async () => {
-    setIsLogin(false);
-  };
   let screenName = '';
+
+
+
+  const CheckDataBase = async () => {
+    setSpinner(true);
+    let isConnected = await Checknetinfo();
+    if (!isConnected) {
+      setSpinner(false);
+      return;
+    }
+    try {
+      const snapShot = await firestore().collection('conductor').get();
+      if (snapShot.empty) {
+        showToast('No user found');
+        return;
+      };
+      let userDoc = snapShot.docs.find(doc => {
+        const data = doc.data();
+        return data.email == email && data.password == password;
+      });
+      if (!userDoc) {
+        setSpinner(false);
+        showToast('Invalid email or password');
+        return;
+      } else {
+        let userData = {id: userDoc.id, ...userDoc.data()};
+          await setUserDetail(userData);
+          await AsyncStorage.setItem('token', userData.id);
+          AsyncStorage.setItem('IsLogin', 'true');
+          setIsLogin(false);
+      }
+    } catch (error) {
+      console.log(error,'error');
+      
+      showToast('Something went wrong');
+    }
+  };
+
+  const handleLogin = async () => {
+    setSpinner(true);
+    if (!email || !password) {
+      showToast('All fields are required !');
+      setSpinner(false);
+      return;
+    }
+
+    const isConnected = await Checknetinfo();
+    if (!isConnected) {
+      setSpinner(false);
+      return;
+    }
+
+    await CheckDataBase();
+  };
+  
+
+  
 
   return (
     <>

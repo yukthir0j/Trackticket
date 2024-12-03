@@ -1,5 +1,6 @@
 import {
-    ActivityIndicator,
+  ActivityIndicator,
+  Alert,
   ScrollView,
   StyleSheet,
   Text,
@@ -12,23 +13,19 @@ import {useNavigation} from '@react-navigation/native';
 import {TextInput, useTheme} from 'react-native-paper';
 import CustomText from '../customText/CustomText';
 import {fonts} from '../customText/fonts';
-import { showToast } from '../../utils/Toast';
+import {showToast} from '../../utils/Toast';
+import {useAuthContext} from '../context/GlobaContext';
+import firestore from '@react-native-firebase/firestore';
 
 export default function EditProfile() {
   const navigation = useNavigation();
   const theme = useTheme();
+  const {userDetail,setCount} = useAuthContext();
 
   const [errors, setErrors] = useState({});
   const [submitSpinner, setSubmitSpinner] = useState(false);
 
-  const user = {
-    name: 'Murshid',
-    gender: 'Male',
-    email: 'm@gmail.com',
-    password: '123',
-  };
-
-  const [form, setForm] = useState(user);
+  const [form, setForm] = useState(userDetail);
 
   const handleChange = (field, value) => {
     setForm(prev => ({
@@ -39,7 +36,6 @@ export default function EditProfile() {
 
   const validateForm = () => {
     let newError = {};
-
     if (!form.name) {
       newError.name = 'Name is Required';
     }
@@ -49,24 +45,31 @@ export default function EditProfile() {
     if (!form.password) {
       newError.fare = 'Password is Required';
     }
-    if (!form.gender) {
-      newError.gender = 'Gender is Required';
-    }
     setErrors(newError);
     return Object.keys(newError).length === 0;
   };
 
   const SubmitForm = async () => {
-    await setSubmitSpinner(true);
-    // if (validateForm()) {
-    //   showToast('Submitted Successfully ....');
-    // } else {
-    // await setSubmitSpinner(false);
-    // }
+    try {
+      await setSubmitSpinner(true);
+      console.log(userDetail, 'userDetail');
+      if (!validateForm()) {
+        showToast('Please correct the highlighted fields.');
+        return; // Exit early if validation fails
+      }
+      // Update the Firestore document
+      await firestore()
+        .collection('conductor')
+        .doc(userDetail?.id)
+        .update(form);
 
-    showToast('Updated Successfully ....');
-    await setSubmitSpinner(false);
-    navigation.goBack();
+      showToast('Form updated successfully!');
+    } catch (error) {
+      console.error('Error updating Firestore document:', error);
+      showToast('Failed to submit the form. Please try again.');
+    } finally {
+      await setSubmitSpinner(false); // Ensure spinner is turned off in all cases
+    }
   };
 
   return (
@@ -101,29 +104,11 @@ export default function EditProfile() {
 
             <TextInput
               mode="outlined"
-              label={'Gender (Male/Female/Other)'}
-              style={styles.input}
-              value={form.gender}
-              onChangeText={value => handleChange('gender', value)}
-            />
-            {errors.gender && (
-              <CustomText
-                style={[
-                  styles.errorText,
-                  {fontFamily: fonts.Light, color: theme.colors.error},
-                ]}>
-                {errors.gender}
-              </CustomText>
-            )}
-
-            <TextInput
-              mode="outlined"
               label={'Email'}
               style={styles.input}
               value={form.email}
               onChangeText={value => handleChange('email', value)}
             />
-
             {errors.email && (
               <CustomText
                 style={[
@@ -156,7 +141,7 @@ export default function EditProfile() {
             {/* submit Btn */}
             <TouchableOpacity
               activeOpacity={0.8}
-              onPress={submitSpinner?()=>{}:SubmitForm}
+              onPress={submitSpinner ? () => {} : SubmitForm}
               style={[
                 styles.button,
                 {backgroundColor: theme.colors.btn, marginBottom: 40},

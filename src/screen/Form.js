@@ -1,4 +1,5 @@
 import {
+  Dimensions,
   Image,
   ScrollView,
   StyleSheet,
@@ -19,9 +20,13 @@ import CustomText from '../customText/CustomText';
 import {fonts} from '../customText/fonts';
 import {Iconify} from 'react-native-iconify';
 import {showToast} from '../../utils/Toast';
+import {uploadImageToCloudinary} from '../cloudinary';
+import {useAuthContext} from '../context/GlobaContext';
+import axios from 'axios';
 
 export default function Form({route}) {
   let {imageUri} = route.params;
+  const {userDetail, ipAddress} = useAuthContext();
 
   const navigation = useNavigation();
   const theme = useTheme();
@@ -40,10 +45,45 @@ export default function Form({route}) {
   const [form, setForm] = useState({
     startDestination: '',
     endDestination: '',
-    gender: '', // male/female
     fare: '',
     transactionMode: '',
   });
+
+  // const handleVerify = async () => {
+  //   await setSpinner(true);
+  //   onToggleSnackBar();
+  //   // Wait for the image upload to complete and get the image URL
+  //   const uploadedImageUrl = await uploadImageToCloudinary(
+  //     form?.name,
+  //     // form?.profile_image,
+  //     imageUri,
+  //     `Ticket-${userDetail?.role}` || 'Track-Ticket',
+  //   );
+  //   console.log(uploadedImageUrl.imageUri, 'uploadedImageUrl');
+  //   showToast('Sent Successfully ...');
+  //   try {
+  //     let data = {image: uploadedImageUrl?.imageUri};
+  //     let response = await axios.post(`${ipAddress}/face_match`, data); //Live
+  //     console.log(response.data, 'response');
+
+  //     let message = response.data.message;
+  //     showToast(`${message}`);
+  //     if (response.data.status) {
+  //       await setSpinner(false);
+  //       await setShowimage(false);
+  //       setScreen('User Detail');
+  //       onDismissSnackBar();
+  //     }
+  //   } catch (error) {
+  //     console.log(error, 'error');
+  //     if (axios.isAxiosError(error)) {
+  //       // Check if the error has a response (like status 400 errors)
+  //       if (error.response) {
+  //         showToast(`${error.response.data.error}`);
+  //       }
+  //     }
+  //   }
+  // };
 
   const handleVerify = async () => {
     await setSpinner(true);
@@ -74,9 +114,6 @@ export default function Form({route}) {
 
   const validateForm = () => {
     let newError = {};
-    if (!form.gender) {
-      newError.gender = 'Gender is Required';
-    }
     if (!form.startDestination) {
       newError.startDestination = 'Start Destination is Required';
     }
@@ -148,7 +185,7 @@ export default function Form({route}) {
                   style={[
                     {
                       fontSize: 22,
-                      fontFamily: fonts.Bold,
+                      fontFamily: fonts.SemiBold,
                     },
                   ]}>
                   Image Preview :
@@ -214,23 +251,6 @@ export default function Form({route}) {
                       {fontFamily: fonts.Light, color: theme.colors.error},
                     ]}>
                     {errors.endDestination}
-                  </CustomText>
-                )}
-
-                <TextInput
-                  mode="outlined"
-                  label={'Gender (Male/Female/Other)'}
-                  style={styles.input}
-                  value={form.gender}
-                  onChangeText={value => handleChange('gender', value)}
-                />
-                {errors.gender && (
-                  <CustomText
-                    style={[
-                      styles.errorText,
-                      {fontFamily: fonts.Light, color: theme.colors.error},
-                    ]}>
-                    {errors.gender}
                   </CustomText>
                 )}
 
@@ -364,9 +384,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   image: {
-    height: 200,
-    width: 200,
-    borderRadius: 13,
+    height: Dimensions.get('window').width / 1.2,
+    width: Dimensions.get('window').width / 1.2,
+    borderRadius: 40,
   },
   button: {
     marginTop: 20,
