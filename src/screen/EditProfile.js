@@ -52,7 +52,6 @@ export default function EditProfile() {
   const SubmitForm = async () => {
     try {
       await setSubmitSpinner(true);
-      console.log(userDetail, 'userDetail');
       if (!validateForm()) {
         showToast('Please correct the highlighted fields.');
         return; // Exit early if validation fails

@@ -16,7 +16,6 @@ import firestore from '@react-native-firebase/firestore';
 import { showToast } from '../../utils/Toast';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-
 export default function Login() {
   let theme = useTheme();
   const {setIsLogin, Checknetinfo, setUserDetail} = useAuthContext();

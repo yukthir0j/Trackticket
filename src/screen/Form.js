@@ -1,4 +1,5 @@
 import {
+  Alert,
   Dimensions,
   Image,
   ScrollView,
@@ -26,8 +27,7 @@ import axios from 'axios';
 
 export default function Form({route}) {
   let {imageUri} = route.params;
-  const {userDetail, ipAddress} = useAuthContext();
-
+  const {userDetail, ipAddress, setCount} = useAuthContext();
   const navigation = useNavigation();
   const theme = useTheme();
   const [spinner, setSpinner] = useState(false);
@@ -38,63 +38,65 @@ export default function Form({route}) {
 
   const [visible, setVisible] = useState(false);
   const [showimage, setShowimage] = useState(true);
+  const [resData, setResData] = useState([]);
   const onToggleSnackBar = () => setVisible(!visible);
   const onDismissSnackBar = () => setVisible(false);
 
   const [screen, setScreen] = useState('');
   const [form, setForm] = useState({
-    startDestination: '',
-    endDestination: '',
+    location: '',
+    destination: '',
     fare: '',
-    transactionMode: '',
+    mode: '',
   });
-
-  // const handleVerify = async () => {
-  //   await setSpinner(true);
-  //   onToggleSnackBar();
-  //   // Wait for the image upload to complete and get the image URL
-  //   const uploadedImageUrl = await uploadImageToCloudinary(
-  //     form?.name,
-  //     // form?.profile_image,
-  //     imageUri,
-  //     `Ticket-${userDetail?.role}` || 'Track-Ticket',
-  //   );
-  //   console.log(uploadedImageUrl.imageUri, 'uploadedImageUrl');
-  //   showToast('Sent Successfully ...');
-  //   try {
-  //     let data = {image: uploadedImageUrl?.imageUri};
-  //     let response = await axios.post(`${ipAddress}/face_match`, data); //Live
-  //     console.log(response.data, 'response');
-
-  //     let message = response.data.message;
-  //     showToast(`${message}`);
-  //     if (response.data.status) {
-  //       await setSpinner(false);
-  //       await setShowimage(false);
-  //       setScreen('User Detail');
-  //       onDismissSnackBar();
-  //     }
-  //   } catch (error) {
-  //     console.log(error, 'error');
-  //     if (axios.isAxiosError(error)) {
-  //       // Check if the error has a response (like status 400 errors)
-  //       if (error.response) {
-  //         showToast(`${error.response.data.error}`);
-  //       }
-  //     }
-  //   }
-  // };
-
   const handleVerify = async () => {
     await setSpinner(true);
     onToggleSnackBar();
-    setTimeout(async () => {
-      showToast('Sent Successfully ...');
-      await setSpinner(false);
-      await setShowimage(false);
-      setScreen('User Detail');
-      onDismissSnackBar();
-    }, 3000);
+    // Wait for the image upload to complete and get the image URL
+    const uploadedImageUrl = await uploadImageToCloudinary(
+      form?.name,
+      // form?.profile_image,
+      imageUri,
+      `Ticket-${userDetail?.role}` || 'Track-Ticket',
+    );
+    try {
+      let formData = new FormData();
+      formData.append('image', {
+        uri: uploadedImageUrl?.imageUri,
+        name: 'face.jpg', // Replace with the actual filename if available
+        type: 'image/jpeg', // Replace with the actual MIME type if available
+      });
+
+      let response = await axios.post(`${ipAddress}/face_match`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      console.log(response.data.status, 'response.data');
+      if (response.data.status == 'no_match') {
+        let message =
+          "We couldn't find a match for your details. Please try again..";
+        showToast(`${message}`);
+        await setSpinner(false);
+        return;
+      }
+      await setForm(response.data);
+      let message = response.data.message;
+      showToast(`${message}`);
+      if (response.data.status) {
+        await setSpinner(false);
+        await setShowimage(false);
+        setScreen('User Detail');
+        onDismissSnackBar();
+      }
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        // Check if the error has a response (like status 400 errors)
+        if (error.response) {
+          showToast(`${error.response.data.error}`);
+        }
+      }
+    }
   };
 
   const handleChange = (field, value) => {
@@ -107,39 +109,58 @@ export default function Form({route}) {
   const handleMode = mode => {
     setForm(prev => ({
       ...prev,
-      transactionMode: mode,
+      mode: mode,
     }));
     if (mode == 'UPI') setShowScanner(true);
   };
 
   const validateForm = () => {
     let newError = {};
-    if (!form.startDestination) {
-      newError.startDestination = 'Start Destination is Required';
+    if (!form.location) {
+      newError.location = 'Start Destination is Required';
     }
-    if (!form.endDestination) {
-      newError.endDestination = 'End Destination is Required';
+    if (!form.destination) {
+      newError.destination = 'End Destination is Required';
     }
     if (!form.fare) {
       newError.fare = 'Fair Amount is Required';
     }
-    if (!form.transactionMode) {
-      newError.transactionMode = 'Transaction mode is Required';
+    if (!form.mode) {
+      newError.mode = 'Transaction mode is Required';
     }
     setErrors(newError);
     return Object.keys(newError).length === 0;
   };
   const SubmitForm = async () => {
     await setSubmitSpinner(true);
-    // if (validateForm()) {
-    //   showToast('Submitted Successfully ....');
-    // } else {
-    // await setSubmitSpinner(false);
-    // }
-
-    showToast('Submitted Successfully ....');
-    await setSubmitSpinner(false);
-    navigation.goBack();
+    if (validateForm()) {
+      try {
+        let response = await axios.put(
+          `${ipAddress}/update_passenger/${form?.id}`,
+          form,
+        );
+        let status = response.data.status;
+        if (status == 'success') {
+          let message = response.data.message;
+          showToast(`${message}`);
+          setCount(count => count + 1);
+          navigation.goBack();
+          await setSpinner(false);
+        } else {
+          showToast('Something went wrong..');
+        }
+      } catch (error) {
+        if (axios.isAxiosError(error)) {
+          // Check if the error has a response (like status 400 errors)
+          if (error.response) {
+            showToast(`${error.response.data.error}`);
+          }
+        }
+      }
+      await setSubmitSpinner(false);
+    } else {
+      await setSubmitSpinner(false);
+    }
   };
 
   const ScannerModal = () => {
@@ -219,38 +240,40 @@ export default function Form({route}) {
             <>
               <View>
                 <TextInput
+                  numberOfLines={3}
+                  multiline={true}
                   mode="outlined"
                   label={'Start Destination'}
                   style={styles.input}
-                  value={form.startDestination}
-                  onChangeText={value =>
-                    handleChange('startDestination', value)
-                  }
+                  value={form.location}
+                  onChangeText={value => handleChange('location', value)}
                 />
-                {errors.startDestination && (
+                {errors.location && (
                   <CustomText
                     style={[
                       styles.errorText,
                       {fontFamily: fonts.Light, color: theme.colors.error},
                     ]}>
-                    {errors.startDestination}
+                    {errors.location}
                   </CustomText>
                 )}
 
                 <TextInput
+                  numberOfLines={3}
+                  multiline={true}
                   mode="outlined"
                   label={'End Destination'}
                   style={styles.input}
-                  value={form.endDestination}
-                  onChangeText={value => handleChange('endDestination', value)}
+                  value={form.destination}
+                  onChangeText={value => handleChange('destination', value)}
                 />
-                {errors.endDestination && (
+                {errors.destination && (
                   <CustomText
                     style={[
                       styles.errorText,
                       {fontFamily: fonts.Light, color: theme.colors.error},
                     ]}>
-                    {errors.endDestination}
+                    {errors.destination}
                   </CustomText>
                 )}
 
@@ -287,7 +310,7 @@ export default function Form({route}) {
                         styles.cardview,
                         {
                           backgroundColor:
-                            form.transactionMode == 'Cash'
+                            form.mode == 'Cash'
                               ? theme.colors.appDark
                               : 'transparent',
                         },
@@ -305,7 +328,7 @@ export default function Form({route}) {
                         styles.cardview,
                         {
                           backgroundColor:
-                            form.transactionMode == 'UPI'
+                            form.mode == 'UPI'
                               ? theme.colors.appDark
                               : 'transparent',
                         },
@@ -318,13 +341,13 @@ export default function Form({route}) {
                     </TouchableOpacity>
                   </View>
 
-                  {errors.transactionMode && (
+                  {errors.mode && (
                     <CustomText
                       style={[
                         styles.errorText,
                         {fontFamily: fonts.Light, color: theme.colors.error},
                       ]}>
-                      {errors.transactionMode}
+                      {errors.mode}
                     </CustomText>
                   )}
                 </View>
@@ -332,7 +355,7 @@ export default function Form({route}) {
                 {/* submit Btn */}
                 <TouchableOpacity
                   activeOpacity={0.8}
-                  onPress={SubmitForm}
+                  onPress={submitSpinner ? () => {} : SubmitForm}
                   style={[
                     styles.button,
                     {backgroundColor: theme.colors.btn, marginBottom: 40},
