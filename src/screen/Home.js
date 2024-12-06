@@ -16,14 +16,34 @@ import {Iconify} from 'react-native-iconify';
 import {showToast} from '../../utils/Toast';
 import {launchCamera, launchImageLibrary} from 'react-native-image-picker';
 import {useAuthContext} from '../context/GlobaContext';
+import axios from 'axios';
 
 export default function Home() {
-  const {handleLogout, userDetail} = useAuthContext();
+  const {handleLogout, userDetail, ipAddress, count} =  useAuthContext();
+
   const navigation = useNavigation();
   const theme = useTheme();
   const isFocused = useIsFocused();
   const backPressedOnce = useRef(false);
   const [spinner, setSpinner] = useState(false);
+  const [totalFare, setTotalFare] = useState(0);
+
+  useEffect(() => {
+    const GetFareSummary = async () => {
+      try {
+        const response = await axios.get(`${ipAddress}/total_fare`);
+        if (response?.data?.status == 'true') {
+          await setTotalFare(response?.data?.total_fare);
+        } else {
+          showToast('Something went wrong ...');
+        }
+      } catch (error) {
+        console.error('Error fetching fare summary:', error.message);
+        showToast('Something went wrong ...');
+      }
+    };
+    GetFareSummary();
+  }, [count]);
 
   useEffect(() => {
     const backHandler = BackHandler.addEventListener(
@@ -55,7 +75,7 @@ export default function Home() {
       quality: 1,
       base64: true,
     };
-    await launchCamera(options, response => {
+    await launchImageLibrary(options, response => {
       if (response.didCancel) {
         showToast('Picture not selected ...');
       } else if (response.errorCode) {
@@ -105,15 +125,15 @@ export default function Home() {
           </View>
         </View>
 
-        {/* Today's fair  */}
+        {/* Today's fare  */}
         <View
-          style={[styles.FairView, {backgroundColor: theme.colors.appDark}]}>
+          style={[styles.fareView, {backgroundColor: theme.colors.appDark}]}>
           <View>
             <CustomText style={[styles.totalText, {fontFamily: fonts.Regular}]}>
-              Today's Fair
+              Total Fare
             </CustomText>
             <CustomText style={[styles.valueText, {fontFamily: fonts.Regular}]}>
-              $1,23,444
+              ₹ {totalFare}
             </CustomText>
           </View>
 
@@ -206,7 +226,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
-  FairView: {
+  fareView: {
     padding: 21,
     marginTop: 5,
     borderRadius: 15,

@@ -127,6 +127,7 @@ export const AuthContextProvider = ({children}) => {
 
         gotoSetting,
         setCount,
+        count,
 
         ipAddress,
       }}>
