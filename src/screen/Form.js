@@ -72,7 +72,13 @@ export default function Form({route}) {
           'Content-Type': 'multipart/form-data',
         },
       });
-      console.log(response.data.status, 'response.data');
+      console.log(response.data.status, 'response.dataqwewq');
+      // if (response.data.status == 'unverified') {
+      //   let message = 'Unverified user ..';
+      //   showToast(`${message}`);
+      //   await setSpinner(false);
+      //   return;
+      // }
       if (response.data.status == 'no_match') {
         let message =
           "We couldn't find a match for your details. Please try again..";
