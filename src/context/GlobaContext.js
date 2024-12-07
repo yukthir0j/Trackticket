@@ -1,6 +1,6 @@
 import {Alert, Linking, Platform, StyleSheet, Text, View} from 'react-native';
 import React, {createContext, useContext, useEffect, useState} from 'react';
-import NetInfo, {useNetInfoInstance} from '@react-native-community/netinfo';
+import NetInfo from '@react-native-community/netinfo';
 import {showToast} from '../../utils/Toast.js';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import firestore from '@react-native-firebase/firestore';
@@ -43,6 +43,7 @@ export const AuthContextProvider = ({children}) => {
         .onSnapshot(async snapShot => {
           if (snapShot.exists) {
             let data = snapShot.data();
+            console.log(data?.ipAddress,'data?.ipAddress');
             await setIpAddress(data?.ipAddress);
           } else {
             console.warn('User document does not exist');
