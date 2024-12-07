@@ -24,6 +24,7 @@ import {showToast} from '../../utils/Toast';
 import {uploadImageToCloudinary} from '../cloudinary';
 import {useAuthContext} from '../context/GlobaContext';
 import axios from 'axios';
+import {DropDown} from './DropDown';
 
 export default function Form({route}) {
   let {imageUri} = route.params;
@@ -33,7 +34,6 @@ export default function Form({route}) {
   const [spinner, setSpinner] = useState(false);
   const [submitSpinner, setSubmitSpinner] = useState(false);
   const [showScanner, setShowScanner] = useState(false);
-
   const [errors, setErrors] = useState({});
 
   const [visible, setVisible] = useState(false);
@@ -49,6 +49,7 @@ export default function Form({route}) {
     fare: '',
     mode: '',
   });
+
   const handleVerify = async () => {
     await setSpinner(true);
     onToggleSnackBar();
@@ -72,7 +73,7 @@ export default function Form({route}) {
           'Content-Type': 'multipart/form-data',
         },
       });
-      console.log(response.data.status, 'response.dataqwewq');
+      console.log(response.data, 'response.dataqwewq');
       // if (response.data.status == 'unverified') {
       //   let message = 'Unverified user ..';
       //   showToast(`${message}`);
@@ -87,7 +88,7 @@ export default function Form({route}) {
         return;
       }
       await setForm(response.data);
-      let message = response.data.message;
+      let message = response.data.status;
       showToast(`${message}`);
       if (response.data.status) {
         await setSpinner(false);
@@ -264,7 +265,7 @@ export default function Form({route}) {
                   </CustomText>
                 )}
 
-                <TextInput
+                {/* <TextInput
                   numberOfLines={3}
                   multiline={true}
                   mode="outlined"
@@ -272,6 +273,12 @@ export default function Form({route}) {
                   style={styles.input}
                   value={form.destination}
                   onChangeText={value => handleChange('destination', value)}
+                /> */}
+
+                <DropDown
+                  // selectedValue={selectedValue}
+                  // setSelectedValue={setSelectedValue}
+                  setForm={setForm}
                 />
                 {errors.destination && (
                   <CustomText

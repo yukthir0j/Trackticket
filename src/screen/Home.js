@@ -20,7 +20,6 @@ import axios from 'axios';
 
 export default function Home() {
   const {handleLogout, userDetail, ipAddress, count} =  useAuthContext();
-
   const navigation = useNavigation();
   const theme = useTheme();
   const isFocused = useIsFocused();
@@ -31,6 +30,7 @@ export default function Home() {
   useEffect(() => {
     const GetFareSummary = async () => {
       try {
+        
         const response = await axios.get(`${ipAddress}/total_fare`);
         if (response?.data?.status == 'true') {
           await setTotalFare(response?.data?.total_fare);
@@ -42,7 +42,10 @@ export default function Home() {
         showToast('Something went wrong ...');
       }
     };
+    if(ipAddress){
     GetFareSummary();
+  }
+
   }, [count]);
 
   useEffect(() => {
