@@ -21,7 +21,6 @@ import CustomText from '../customText/CustomText';
 import {fonts} from '../customText/fonts';
 import {Iconify} from 'react-native-iconify';
 import {showToast} from '../../utils/Toast';
-import {uploadImageToCloudinary} from '../cloudinary';
 import {useAuthContext} from '../context/GlobaContext';
 import axios from 'axios';
 import {DropDown} from './DropDown';
@@ -29,6 +28,7 @@ import {DropDown} from './DropDown';
 export default function Form({route}) {
   let {imageUri} = route.params;
   const {userDetail, ipAddress, setCount} = useAuthContext();
+  
   const navigation = useNavigation();
   const theme = useTheme();
   const [spinner, setSpinner] = useState(false);
@@ -49,33 +49,22 @@ export default function Form({route}) {
     fare: '',
     mode: '',
   });
-  
-  
 
   const handleVerify = async () => {
     await setSpinner(true);
     onToggleSnackBar();
-    // Wait for the image upload to complete and get the image URL
-    const uploadedImageUrl = await uploadImageToCloudinary(
-      form?.name,
-      // form?.profile_image,
-      imageUri,
-      `Ticket-${userDetail?.role}` || 'Track-Ticket',
-    );
     try {
       let formData = new FormData();
       formData.append('image', {
-        uri: uploadedImageUrl?.imageUri,
-        name: 'face.jpg', // Replace with the actual filename if available
-        type: 'image/jpeg', // Replace with the actual MIME type if available
+        uri: imageUri,
+        name: 'passenger',
+        type: 'image/jpeg',
       });
-
       let response = await axios.post(`${ipAddress}/face_match`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
       });
-      console.log(response.data, 'response.dataqwewq');
       // if (response.data.status == 'unverified') {
       //   let message = 'Unverified user ..';
       //   showToast(`${message}`);
@@ -100,6 +89,8 @@ export default function Form({route}) {
       }
     } catch (error) {
       if (axios.isAxiosError(error)) {
+        // console.log(error,'error');
+        
         // Check if the error has a response (like status 400 errors)
         if (error.response) {
           showToast(`${error.response.data.error}`);
@@ -125,15 +116,14 @@ export default function Form({route}) {
 
   const validateForm = () => {
     let newError = {};
-    let parsedData = JSON.parse(form?.destination);
     if (!form.location) {
       newError.location = 'Start Destination is Required';
     }
     if (!form.destination) {
       newError.destination = 'End Destination is Required';
     }
-    
-    if (!parsedData?.fare) {
+
+    if (!form?.fare) {
       newError.fare = 'Fair Amount is Required';
     }
     if (!form?.mode) {
@@ -269,9 +259,7 @@ export default function Form({route}) {
                   </CustomText>
                 )}
 
-                <DropDown
-                  setForm={setForm}
-                />
+                <DropDown setForm={setForm} />
                 {errors.destination && (
                   <CustomText
                     style={[

@@ -19,7 +19,7 @@ import {useAuthContext} from '../context/GlobaContext';
 import axios from 'axios';
 
 export default function Home() {
-  const {handleLogout, userDetail, ipAddress, count} =  useAuthContext();
+  const {handleLogout, userDetail, ipAddress, count} = useAuthContext();
   const navigation = useNavigation();
   const theme = useTheme();
   const isFocused = useIsFocused();
@@ -30,7 +30,6 @@ export default function Home() {
   useEffect(() => {
     const GetFareSummary = async () => {
       try {
-        
         const response = await axios.get(`${ipAddress}/total_fare`);
         if (response?.data?.status == 'true') {
           await setTotalFare(response?.data?.total_fare);
@@ -42,10 +41,9 @@ export default function Home() {
         showToast('Something went wrong ...');
       }
     };
-    if(ipAddress){
-    GetFareSummary();
-  }
-
+    if (ipAddress) {
+      GetFareSummary();
+    }
   }, [count]);
 
   useEffect(() => {
@@ -78,7 +76,7 @@ export default function Home() {
       quality: 1,
       base64: true,
     };
-    await launchImageLibrary(options, response => {
+    await launchCamera(options, response => {
       if (response.didCancel) {
         showToast('Picture not selected ...');
       } else if (response.errorCode) {
@@ -110,6 +108,10 @@ export default function Home() {
             </CustomText>
             <CustomText style={{fontFamily: fonts.Bold, fontSize: 24, top: -4}}>
               {userDetail?.name}
+            </CustomText>
+            <CustomText
+              style={{fontFamily: fonts.Light, fontSize: 13, top: -4}}>
+              {ipAddress}
             </CustomText>
           </View>
           <View style={{flexDirection: 'row', gap: 6, top: 10}}>

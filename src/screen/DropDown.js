@@ -59,6 +59,7 @@ export const DropDown = ({setForm}) => {
     setForm(prev => ({
       ...prev,
       destination: data,
+      fare: fare,
     }));
   };
 
