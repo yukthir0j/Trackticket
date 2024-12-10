@@ -49,6 +49,8 @@ export default function Form({route}) {
     fare: '',
     mode: '',
   });
+  
+  
 
   const handleVerify = async () => {
     await setSpinner(true);
@@ -123,16 +125,18 @@ export default function Form({route}) {
 
   const validateForm = () => {
     let newError = {};
+    let parsedData = JSON.parse(form?.destination);
     if (!form.location) {
       newError.location = 'Start Destination is Required';
     }
     if (!form.destination) {
       newError.destination = 'End Destination is Required';
     }
-    if (!form.fare) {
+    
+    if (!parsedData?.fare) {
       newError.fare = 'Fair Amount is Required';
     }
-    if (!form.mode) {
+    if (!form?.mode) {
       newError.mode = 'Transaction mode is Required';
     }
     setErrors(newError);
@@ -265,19 +269,7 @@ export default function Form({route}) {
                   </CustomText>
                 )}
 
-                {/* <TextInput
-                  numberOfLines={3}
-                  multiline={true}
-                  mode="outlined"
-                  label={'End Destination'}
-                  style={styles.input}
-                  value={form.destination}
-                  onChangeText={value => handleChange('destination', value)}
-                /> */}
-
                 <DropDown
-                  // selectedValue={selectedValue}
-                  // setSelectedValue={setSelectedValue}
                   setForm={setForm}
                 />
                 {errors.destination && (
@@ -289,15 +281,6 @@ export default function Form({route}) {
                     {errors.destination}
                   </CustomText>
                 )}
-
-                <TextInput
-                  mode="outlined"
-                  label={'Fair Amount'}
-                  style={styles.input}
-                  value={form.fare}
-                  keyboardType="numeric"
-                  onChangeText={value => handleChange('fare', value)}
-                />
 
                 {errors.fare && (
                   <CustomText

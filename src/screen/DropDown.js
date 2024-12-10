@@ -52,9 +52,9 @@ export const DropDown = ({setForm}) => {
   ];
 
   const handleSelectItem = item => {
-    console.log(item,'item');
     setSelectedValue(item);
     setModalVisible(false);
+    let fare = item?.fare;
     let data = JSON.stringify(item);
     setForm(prev => ({
       ...prev,
