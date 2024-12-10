@@ -62,7 +62,7 @@ export default function EditProfile() {
         .doc(userDetail?.id)
         .update(form);
 
-      showToast('Form updated successfully!');
+      showToast('Profile updated successfully!');
     } catch (error) {
       console.error('Error updating Firestore document:', error);
       showToast('Failed to submit the form. Please try again.');
