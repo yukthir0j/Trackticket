@@ -76,8 +76,8 @@ export default function Home() {
       quality: 1,
       base64: true,
     };
-    
-    await launchCamera(options, response => {
+
+    await launchImageLibrary(options, response => {
       if (response.didCancel) {
         showToast('Picture not selected ...');
       } else if (response.errorCode) {
@@ -107,12 +107,8 @@ export default function Home() {
             <CustomText style={{fontFamily: fonts.Bold, fontSize: 24}}>
               Welcome Back ,
             </CustomText>
-            <CustomText style={{fontFamily: fonts.Bold, fontSize: 24, top: -4}}>
+            <CustomText style={{fontFamily: fonts.Bold, fontSize: 24, top: -4,color:theme.colors.btn}}>
               {userDetail?.name}
-            </CustomText>
-            <CustomText
-              style={{fontFamily: fonts.Light, fontSize: 13, top: -4}}>
-              {ipAddress}
             </CustomText>
           </View>
           <View style={{flexDirection: 'row', gap: 6, top: 10}}>

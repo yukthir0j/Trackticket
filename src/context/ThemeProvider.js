@@ -11,11 +11,11 @@ const lightTheme = {
     ...DefaultTheme.colors,
     background: '#fff',
     error: '#d9534f',
-    blue: '#4a51a3', // Deep Blue
+    blue: '#97e5ea', // Deep Blue
     green: '#388E3C',
-    appColor: '#343448',
-    appDark: '#353766',
-    btn:"#f3735e"
+    appColor: '#000',
+    appDark: '#6d9295',
+    btn:"#05bbc9"
 
   },
   roundness: 8,
@@ -25,13 +25,14 @@ const darkTheme = {
   ...DarkTheme,
   colors: {
     ...DarkTheme.colors,
-    background: '#343448',
-    error: '#d9534f',
+    background: '#000',
+    blue: '#97e5ea', // Deep Blue
     green: '#388E3C',
-    appColor: '#343448',
-    appDark: 'rgb(71, 71, 90)',
-    
-    btn:"#f3735e"
+    error: '#d9534f',
+    appColor: '#000',
+    appDark: '#6d9295',
+    btn:"#05bbc9"
+
   },
   roundness: 8,
 };
