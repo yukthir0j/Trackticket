@@ -77,7 +77,7 @@ export default function Home() {
       base64: true,
     };
 
-    await launchImageLibrary(options, response => {
+    await launchCamera(options, response => {
       if (response.didCancel) {
         showToast('Picture not selected ...');
       } else if (response.errorCode) {

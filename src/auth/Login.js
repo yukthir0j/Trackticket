@@ -42,10 +42,13 @@ export default function Login() {
         showToast('No user found');
         return;
       };
+      
       let userDoc = snapShot.docs.find(doc => {
         const data = doc.data();
         return data.email == email && data.password == password;
       });
+      console.log("userDoc",userDoc);
+
       if (!userDoc) {
         setSpinner(false);
         showToast('Invalid email or password');
