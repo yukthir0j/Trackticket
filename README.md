@@ -26,11 +26,8 @@
 
 ---
 
-## 📸 Screenshots
 
-> *(Add screenshots of your app UI here — you can upload PNG/JPG images in your repo and link them like below)*
 
-```markdown
-![Home Screen](screenshots/home.png)
-![Ticket View](screenshots/ticket.png)
+
+
 
